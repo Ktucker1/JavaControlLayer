@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Scanner;
 
 import javax.swing.*;
@@ -429,19 +431,45 @@ public class UserInterface{
 	}
 	
 	/////////////////////////////////////////////
-	public byte[] cypher(String input) {
+
+	/////////////////////////////////////////////
+	public String cypher(String input) throws UnsupportedEncodingException {
+		
 		 try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			return md.digest(input.getBytes("UTF-8"));
+			MessageDigest md = MessageDigest.getInstance("MD5");  //MD5 is the only allowed algorithm.
+			
+			String intermediate = new String(md.digest(input.getBytes("UTF-8"))); // don't do UTF-16
+			String output = new String();
+			
+			//iterate through output; convert non-printables to printable
+			CharacterIterator it = new StringCharacterIterator(intermediate);
+			for(char ch = it.first(); ch != CharacterIterator.DONE; ch = it.next()) {
+				
+				if(ch >= 0x7F) {             // if new char above 0d127, move to 0d0-127 range
+					ch = (char) (ch - 0x7F);
+				}
+				
+				if(ch < 0x30) {				// if new char < 0d32, move to above 0d32
+					ch = (char) (ch + 0x30);
+				}
+				if(ch < 0x7F) {				// skip weird stuff like unicode above 0d255
+					output = output.concat(String.valueOf(ch));
+				}
+			}
+			
+			//System.out.println("New Output: " + output);
+			
+			return output;
 			
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("No MD5 implementation.");
-			
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("No UTF-8 encoding ");
 		}
 	}
-	/////////////////////////////////////////////
+	
+	
+	
+	
+	//////////////////////////////////////////////
 	
 	public void checkFileType() {
 		if (lesSelect.isSelected()) {
