@@ -12,12 +12,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-
 
 public class UserInterface{
 	private JTextField username;
@@ -425,6 +427,21 @@ public class UserInterface{
 		frame.getContentPane().removeAll();
 		frame.repaint();
 	}
+	
+	/////////////////////////////////////////////
+	public byte[] cypher(String input) {
+		 try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			return md.digest(input.getBytes("UTF-8"));
+			
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("No MD5 implementation.");
+			
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("No UTF-8 encoding ");
+		}
+	}
+	/////////////////////////////////////////////
 	
 	public void checkFileType() {
 		if (lesSelect.isSelected()) {
