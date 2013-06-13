@@ -8,16 +8,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Scanner;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-
 
 public class UserInterface{
 	private JTextField username;
@@ -36,6 +43,7 @@ public class UserInterface{
 	
 	private JFileChooser fc = new JFileChooser();
 	private JCheckBox lesSelect, descRead;
+	private String description = null;
 	// private page component
 	JLabel pageLabel = new JLabel();
 	JButton geButton = new JButton("Explore GoogleEarth");
@@ -48,6 +56,7 @@ public class UserInterface{
 	JButton enterDescButton = new JButton("Enter new Lesson Description");
 	JButton helpButton = new JButton("Help");
 	JButton sysAdminButton = new JButton("System Administration");
+	JButton addStudentButton = new JButton("Add Student");
 	File file = null;
 	
 	public UserInterface(){
@@ -59,7 +68,7 @@ public class UserInterface{
 		frame.setResizable(false);
 		frame.setLayout(null);
 		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		//fc.setCurrentDirectory(Location of the 4 folders);
+		
 	}
 
 	public void loginLayout(){
@@ -82,8 +91,6 @@ public class UserInterface{
 	}
 	
 	private class ButtonListener implements ActionListener{
-		
-		//Login function
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == loginButton){
@@ -108,12 +115,10 @@ public class UserInterface{
 				}
 			}
 			
-			//Logout button
 			if (e.getSource() == logoutButton){
 				frame.dispose();
 			}
 			
-			//Help button
 			if(e.getSource() == helpButton){
 				helpFrame.setTitle("Program Help");
 				helpFrame.setVisible(true);
@@ -130,15 +135,23 @@ public class UserInterface{
 				helpFrame.add(exitButton);
 			}
 			
-			//Exit button
 			if (e.getSource() == exitButton){
-				Disc.dispose();
-				edit.dispose();
-				sysAdmin.dispose();
-				helpFrame.dispose();
+				if(Disc.isActive()){
+					Disc.remove(lessonDesc);
+					Disc.dispose();					
+				}
+				if(edit.isActive()){
+					edit.remove(lessonDescEdit);
+					edit.dispose();
+				}
+				if(sysAdmin.isActive()){
+					sysAdmin.dispose();
+				}
+				if(helpFrame.isActive()){
+					helpFrame.dispose();
+				}
 			}
 			
-			//Start button
 			if (e.getSource() == startButton && (lesSelect.isSelected() == true) && (descRead.isSelected() == true)){
 				GoogleEarth googleEarth = new GoogleEarth();
 				googleEarth.openGE(file);
@@ -169,7 +182,6 @@ public class UserInterface{
 				JOptionPane.showMessageDialog(null,"Please select your current lesson by clicking on the Select Assignment button.", "Error incomplete pre-lesson plan", 0);
 			}
 			
-			//Lesson Description button
 			if(e.getSource() == lessonDisButton && (lesSelect.isSelected() == true)){
 				Disc.setTitle("Lesson Description");
 				Disc.setVisible(true);
@@ -179,6 +191,8 @@ public class UserInterface{
 				
 				try {
 					descRead.setSelected(true);
+					//description = null;
+					lessonDesc = new JTextArea();
 					lessonReader();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -190,8 +204,17 @@ public class UserInterface{
 			}
 			
 			
-			//Assignment Button
+			
 			if (e.getSource() == assignmentButton){
+				//fc.setCurrentDirectory(Location of the 4 folders);
+				try {
+					File f = new File(new File(".").getCanonicalPath());
+					fc.setCurrentDirectory(f);
+				} catch (IOException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+				
 				int returnVal = fc.showOpenDialog(assignmentButton);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 	                file = fc.getSelectedFile();
@@ -214,7 +237,6 @@ public class UserInterface{
 				}
 			}
 			
-			//Explore Google Earth button
 			if (e.getSource() == geButton){
 				GoogleEarth googleEarth = new GoogleEarth();
 				googleEarth.openGE();
@@ -239,14 +261,15 @@ public class UserInterface{
 				googleEarth.closeGE();				
 			}
 			
-			//Edit Description Button
 			if(e.getSource() == editDescButton  && (lesSelect.isSelected() == true)){
+				
 				edit.setTitle("Edit Lesson Description");
 				edit.setVisible(true);
 				edit.setSize(300, 500);
 				edit.setLocationRelativeTo(null);
 				edit.setLayout(null);
 				lessonDescEdit = new JTextArea(300,0);
+				//lessonDescEdit.setText("");
 				lessonDescEdit.setBounds(40, 50, 200, 300);
 				lessonDescEdit.setLineWrap(true);
 				lessonDescEdit.setWrapStyleWord(true);
@@ -258,11 +281,12 @@ public class UserInterface{
 				exitButton.setSize(startButton.getHeight(),startButton.getWidth());
 				exitButton.setBounds(70,400,150,20);
 				exitButton.addActionListener(new ButtonListener());
-				edit.add(lessonDescEdit);
 				edit.add(exitButton);
 				edit.add(lessLabel);
 				edit.add(enterDescButton);
 				checkFileType();
+				edit.add(lessonDescEdit);
+				edit.repaint();
 			}
 			//NEW
 			if(e.getSource() == editDescButton  && (lesSelect.isSelected() == false)){
@@ -270,26 +294,29 @@ public class UserInterface{
 				JOptionPane.showMessageDialog(null,"Please select your current lesson before editing it's description by clicking on the Select Assignment button.", "Error incomplete lesson selection", 0);
 			}
 				
-			//Enter Description button
+				
 			if(e.getSource() == enterDescButton && (validKML == true)){
-				String description =lessonDescEdit.getText();
-				System.out.println(description);
-				FileWriter fstream;
-				try {
-					fstream = new FileWriter(file, true);
-				    BufferedWriter out = new BufferedWriter(fstream);
-					out.write("<!--" + description + "-->");
-					out.newLine();
-					out.close();
-					validKML = false;
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					System.out.println("ERROR");
+				String des = lessonDescEdit.getText();
+				
+				System.out.println(des + " this is enter button");
+				if (des != null){
+					FileWriter fstream;
+					try {
+						fstream = new FileWriter(file, true);
+					    BufferedWriter out = new BufferedWriter(fstream);
+						out.write("\n" + "<!--" + des + "-->");
+						out.newLine();
+						out.close();
+						validKML = false;
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						System.out.println("ERROR");
+					}
 				}
 			}
 			
-			//System Admin button
 			if(e.getSource() == sysAdminButton) {
 				Border  blackline, raisedetched, loweredetched, raisedbevel, loweredbevel, empty;
 				blackline = BorderFactory.createLineBorder(Color.black);
@@ -309,6 +336,7 @@ public class UserInterface{
 				
 			
 				// Master display
+				
 				JTextArea display0 = new JTextArea();
 				display0.setBounds(220, startY, displayX, displayY);
 				display0.setBorder(blackline);
@@ -425,14 +453,82 @@ public class UserInterface{
 				sysAdmin.add(exitButton);
 			}
 			
+			if (e.getSource() == addStudentButton){
+				String username = JOptionPane.showInputDialog("Enter new username");
+				String password = JOptionPane.showInputDialog("Enter password");
+				
+				if (username == null || password == null)
+					JOptionPane.showMessageDialog(null, "Invalid user data");
+				else {
+					// add student login info
+					File file = new File("data.txt");
+					FileWriter fileWritter;
+					try {
+						fileWritter = new FileWriter(file.getName(),true);
+						BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+						bufferWritter.newLine();
+						bufferWritter.write(username);
+						bufferWritter.newLine();
+						bufferWritter.write(password);
+						bufferWritter.newLine();
+						bufferWritter.write("1");
+		    	        bufferWritter.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+    	        
+			}
+			
 		}
+		
 	}
-	
 	
 	public void eraseLogin(){
 		frame.getContentPane().removeAll();
 		frame.repaint();
 	}
+	
+	/////////////////////////////////////////////
+
+	/////////////////////////////////////////////
+	public String cypher(String input) throws UnsupportedEncodingException {
+		 try {
+			MessageDigest md = MessageDigest.getInstance("MD5");  //MD5 is the only allowed algorithm.
+			
+			String intermediate = new String(md.digest(input.getBytes("UTF-8"))); // don't do UTF-16
+			String output = new String();
+			
+			//iterate through output; convert non-printables to printable
+			CharacterIterator it = new StringCharacterIterator(intermediate);
+			for(char ch = it.first(); ch != CharacterIterator.DONE; ch = it.next()) {
+				
+				if(ch >= 0x7F) {             // if new char above 0d127, move to 0d0-127 range
+					ch = (char) (ch - 0x7F);
+				}
+				
+				if(ch < 0x30) {				// if new char < 0d32, move to above 0d32
+					ch = (char) (ch + 0x30);
+				}
+				if(ch < 0x7F) {				// skip weird stuff like unicode above 0d255
+					output = output.concat(String.valueOf(ch));
+				}
+			}
+			
+			//System.out.println("New Output: " + output);
+			
+			return output;
+			
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("No MD5 implementation.");
+		}
+	}
+	
+	
+	
+	
+	//////////////////////////////////////////////
 	
 	public void checkFileType() {
 		if (lesSelect.isSelected()) {
@@ -451,7 +547,6 @@ public class UserInterface{
 
 	public void lessonReader() throws IOException{
 		//Creating  the lesson descriptions
-		lessonDesc = new JTextArea();
 		lessonDesc.setLineWrap(true);
 		lessonDesc.setWrapStyleWord(true);
 		lessonDesc.setBounds(20, 0, 240, 400);
@@ -463,25 +558,34 @@ public class UserInterface{
 		exitButton.addActionListener(new ButtonListener());
 		Disc.add(exitButton);
 		Disc.add(lessLabel);
-		Disc.add(lessonDesc);
+		lessonDesc.setEditable(false);
+		System.out.println(lessonDesc.getText() + " lesson Desc before file io ");
 		//Creating file reader
-		BufferedReader reader = new BufferedReader(new FileReader(fileName));
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-		    if (line.startsWith("<!--")) {
-		    	System.out.println(line);
-		    	line=line.replace("<!--","");
-		    	line=line.replace("-->","");
-		    	String description=line.trim();
+		FileInputStream fstream = new FileInputStream(fileName);
+		DataInputStream in = new DataInputStream(fstream);
+		  BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		  String strLine;
+		while ((strLine = br.readLine()) != null) {
+		    if (strLine.startsWith("<!--")) {
+		    	System.out.println(strLine);
+		    	strLine=strLine.replace("<!--","");
+		    	System.out.println(strLine  + "  First");
+		    	strLine=strLine.replace("-->","");
+		    	System.out.println(strLine  + "  SEC");
+		    	description=strLine;
+		    	System.out.println(description + "  Last");
+		    	lessonDesc.setText(description);
+		    	System.out.println(lessonDesc.getText() + " lesson Desc");
 		    	lessonDesc.setText(description);
 		    	descriptions = true;
 		    }
-		    
 		}
+	    in.close();
 		if(descriptions == false){
 			String description = ("There is currently no discription for this lesson");
 			lessonDesc.setText(description);
 		}
+		Disc.add(lessonDesc);
 	}
 	
 	public void studentLayout(){
@@ -491,6 +595,7 @@ public class UserInterface{
 		assignmentButton.setSize(startButton.getHeight(),startButton.getWidth());
 		logoutButton.setSize(startButton.getHeight(),startButton.getWidth());
 		lessonDisButton.setSize(startButton.getHeight(),startButton.getWidth());
+		
 		startButton.setBounds(70,250,150,20);
 		assignmentButton.setBounds(70,150,150,20);
 		//lesSelect.setSize(20,20);
@@ -523,13 +628,14 @@ public class UserInterface{
 		pageLabel = new JLabel("Welcome, Teacher");
 		lesSelect = new JCheckBox();
 		descRead = new JCheckBox();
+		
 		helpButton.setSize(startButton.getHeight(), startButton.getWidth());
 		assignmentButton.setSize(startButton.getHeight(),startButton.getWidth());
 		logoutButton.setSize(startButton.getHeight(),startButton.getWidth());
 		lessonDisButton.setSize(startButton.getHeight(),startButton.getWidth());
 		editDescButton.setSize(startButton.getHeight(),startButton.getWidth());
-		helpButton.setBounds(70,350,150,20);
 		
+		helpButton.setBounds(70,350,150,20);		
 		editDescButton.setBounds(45,300,200,20);
 		startButton.setBounds(70,200,150,20);
 		assignmentButton.setBounds(70,100,150,20);
@@ -541,7 +647,9 @@ public class UserInterface{
 		descRead.setEnabled(false);
 		geButton.setBounds(70, 250, 150, 20);
 		logoutButton.setBounds(70,400,150,20);
-		pageLabel.setBounds(90, 70, 150, 20);	
+		pageLabel.setBounds(90, 20, 150, 20);
+		addStudentButton.setBounds(70, 60, 150, 20);
+		
 		helpButton.addActionListener(new ButtonListener());
 		logoutButton.addActionListener(new ButtonListener());
 		startButton.addActionListener(new ButtonListener());
@@ -549,7 +657,10 @@ public class UserInterface{
 		assignmentButton.addActionListener(new ButtonListener());
 		lessonDisButton.addActionListener(new ButtonListener());
 		editDescButton.addActionListener(new ButtonListener());
+		addStudentButton.addActionListener(new ButtonListener());
+		
 		frame.add(helpButton);
+		frame.add(addStudentButton);
 		frame.add(editDescButton);
 		frame.add(descRead);
 		frame.add(lesSelect);

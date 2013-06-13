@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 public class UserDatabase {
 	private File file;
 	private ArrayList<User> users = new ArrayList<User>();
@@ -26,6 +28,7 @@ public class UserDatabase {
             }
             scanner.close();
         } catch (FileNotFoundException e) {
+        	JOptionPane.showMessageDialog(null, "Unable to find data.txt");
             e.printStackTrace();
         } catch (Exception e){
         	e.printStackTrace();
