@@ -82,6 +82,8 @@ public class UserInterface{
 	}
 	
 	private class ButtonListener implements ActionListener{
+		
+		//Login function
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == loginButton){
@@ -106,10 +108,12 @@ public class UserInterface{
 				}
 			}
 			
+			//Logout button
 			if (e.getSource() == logoutButton){
 				frame.dispose();
 			}
 			
+			//Help button
 			if(e.getSource() == helpButton){
 				helpFrame.setTitle("Program Help");
 				helpFrame.setVisible(true);
@@ -126,6 +130,7 @@ public class UserInterface{
 				helpFrame.add(exitButton);
 			}
 			
+			//Exit button
 			if (e.getSource() == exitButton){
 				Disc.dispose();
 				edit.dispose();
@@ -133,6 +138,7 @@ public class UserInterface{
 				helpFrame.dispose();
 			}
 			
+			//Start button
 			if (e.getSource() == startButton && (lesSelect.isSelected() == true) && (descRead.isSelected() == true)){
 				GoogleEarth googleEarth = new GoogleEarth();
 				googleEarth.openGE(file);
@@ -163,6 +169,7 @@ public class UserInterface{
 				JOptionPane.showMessageDialog(null,"Please select your current lesson by clicking on the Select Assignment button.", "Error incomplete pre-lesson plan", 0);
 			}
 			
+			//Lesson Description button
 			if(e.getSource() == lessonDisButton && (lesSelect.isSelected() == true)){
 				Disc.setTitle("Lesson Description");
 				Disc.setVisible(true);
@@ -183,7 +190,7 @@ public class UserInterface{
 			}
 			
 			
-			
+			//Assignment Button
 			if (e.getSource() == assignmentButton){
 				int returnVal = fc.showOpenDialog(assignmentButton);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -207,6 +214,7 @@ public class UserInterface{
 				}
 			}
 			
+			//Explore Google Earth button
 			if (e.getSource() == geButton){
 				GoogleEarth googleEarth = new GoogleEarth();
 				googleEarth.openGE();
@@ -231,6 +239,7 @@ public class UserInterface{
 				googleEarth.closeGE();				
 			}
 			
+			//Edit Description Button
 			if(e.getSource() == editDescButton  && (lesSelect.isSelected() == true)){
 				edit.setTitle("Edit Lesson Description");
 				edit.setVisible(true);
@@ -261,19 +270,18 @@ public class UserInterface{
 				JOptionPane.showMessageDialog(null,"Please select your current lesson before editing it's description by clicking on the Select Assignment button.", "Error incomplete lesson selection", 0);
 			}
 				
-				
+			//Enter Description button
 			if(e.getSource() == enterDescButton && (validKML == true)){
 				String description =lessonDescEdit.getText();
 				System.out.println(description);
-				 FileWriter fstream;
+				FileWriter fstream;
 				try {
 					fstream = new FileWriter(file, true);
-				  BufferedWriter out = new BufferedWriter(fstream);
+				    BufferedWriter out = new BufferedWriter(fstream);
 					out.write("<!--" + description + "-->");
 					out.newLine();
 					out.close();
 					validKML = false;
-					
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -281,6 +289,7 @@ public class UserInterface{
 				}
 			}
 			
+			//System Admin button
 			if(e.getSource() == sysAdminButton) {
 				Border  blackline, raisedetched, loweredetched, raisedbevel, loweredbevel, empty;
 				blackline = BorderFactory.createLineBorder(Color.black);
@@ -300,7 +309,6 @@ public class UserInterface{
 				
 			
 				// Master display
-				
 				JTextArea display0 = new JTextArea();
 				display0.setBounds(220, startY, displayX, displayY);
 				display0.setBorder(blackline);
@@ -418,8 +426,8 @@ public class UserInterface{
 			}
 			
 		}
-		
 	}
+	
 	
 	public void eraseLogin(){
 		frame.getContentPane().removeAll();
